@@ -291,6 +291,56 @@ func (m *RCT) totalEnergy() (float64, error) {
 	}
 }
 
+// totalEnergyIn implements the api.MeterEnergy interface
+func (m *RCT) totalEnergyIn() (float64, error) {
+	switch m.usage {
+	case "grid":
+		res, err := m.queryFloat(rct.TotalEnergyGridWh)
+		return res / 1000, err
+
+	case "battery":
+		var eg errgroup.Group
+		var in float64
+
+		eg.Go(func() error {
+			var err error
+			in, err = m.queryFloat(rct.TotalEnergyBattInWh)
+			return err
+		})
+
+		err := eg.Wait()
+		return in / 1000, err
+
+	default:
+		return 0, fmt.Errorf("invalid usage: %s", m.usage)
+	}
+}
+
+// totalEnergyOut implements the api.MeterEnergy interface
+func (m *RCT) totalEnergyOut() (float64, error) {
+	switch m.usage {
+	case "grid":
+		res, err := m.queryFloat(rct.TotalEnergyGridWh)
+		return res / 1000, err
+
+	case "battery":
+		var eg errgroup.Group
+		var out float64
+
+		eg.Go(func() error {
+			var err error
+			out, err = m.queryFloat(rct.TotalEnergyBattOutWh)
+			return err
+		})
+
+		err := eg.Wait()
+		return out / 1000, err
+
+	default:
+		return 0, fmt.Errorf("invalid usage: %s", m.usage)
+	}
+}
+
 func queryRCT[T any](id rct.Identifier, fun func(id rct.Identifier) (T, error)) (T, error) {
 	bo := backoff.NewExponentialBackOff(
 		backoff.WithInitialInterval(500*time.Millisecond),
