@@ -19,6 +19,8 @@ type Response interface {
 	CurrentPower() float64
 	ChargedEnergy() float64
 	TotalEnergy() float64
+	TotalEnergyIn() float64
+	TotalEnergyOut() float64
 	Currents() (float64, float64, float64)
 	Voltages() (float64, float64, float64)
 	Identify() string
